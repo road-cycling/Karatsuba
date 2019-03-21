@@ -41,6 +41,7 @@ let printline_int x =
 
 
 let add_arrays ~array1 ~array2 =
+  let ( array1, array2 ) = padArray ~array1:array1 ~array2:array2 in
   Core.Array.rev_inplace array1;
   Core.Array.rev_inplace array2;
   let maxlen = Core.Int.max (Array.length array1) (Array.length array2) in
@@ -61,20 +62,17 @@ let add_arrays ~array1 ~array2 =
 
 ;;
 
-
-
 let subtract_arrays ~array1 ~array2 = 
+  (* let ( array1, array2 ) = padArray ~array1:array1 ~array2:array2 in *)
   let length = Array.length array1 in 
   let newArray = Array.make length 0 in 
   let carry = ref false in 
   Core.Array.rev_inplace array1;
   Core.Array.rev_inplace array2;
   for i = 0 to length - 1 do 
-    print_endline ("I is: " ^ (string_of_int i));
     let result = ref 0 in
     let bool1 = array1.(i) = 0 && array2.(i) = 0 in
     let bool2 = array1.(i) = 0 || ( array1.(i) < array2.(i) ) in
-    print_endline "Before";
     match ( bool1, bool2 ) with 
       | ( true, _ ) -> 
         (match !carry with 
@@ -84,23 +82,20 @@ let subtract_arrays ~array1 ~array2 =
         result := array1.(i) + 10 - array2.(i);
         (match array1.(i + 1) with 
           | 0 -> array1.(i + 1) <- 9;
-          | _ -> array1.(i + 1) <- array1.(i + 1) - 1)
+          | _ -> array1.(i + 1) <- array1.(i + 1) - 1);
+        (match 0 > !result with 
+          | true  -> newArray.(i) <- -1 * !result; carry := true; 
+          | false -> newArray.(i) <- !result); 
       | ( _ ,  _  ) ->
-        result := array1.(i) - array2.(i) - (if !carry then 1 else 0);
-        carry := false;
-    print_endline "After";
-    print_endline ("-- Middle Result is : " ^ (string_of_int !result));
+        result := array1.(i) - array2.(i) - (if !carry then 1 else 0); carry := false;
     match 0 > !result with 
-    | true  -> newArray.(i) <- -1 * !result; carry := true; print_endline ("True Result is : " ^ (string_of_int !result)); 
-    | false -> newArray.(i) <- !result; print_endline ("False Result is : " ^ (string_of_int !result));
-  print_endline ("Ending I is: " ^ (string_of_int i));
+    | true  -> newArray.(i) <- -1 * !result; carry := true;
+    | false -> newArray.(i) <- !result; 
   done;
   Core.Array.rev_inplace newArray;
   newArray
     ;;
 
-
-    
 
 
 let subtract ~array1 ~array2 =   
@@ -129,42 +124,43 @@ let str_2_array ~str =
   done;
   newArray;;
 
+let multiplyLen2 ~array1 ~array2 = 
+  let first  = array1.(0) * 10 + array1.(1) in
+  let second = array2.(0) * 10 + array2.(1) in 
+  first * second
+   ;;
 
+let rec karatsuba ~array1 ~array2 =
 
-(* let rec karatsuba ~array1 ~array2 =
+  match ((Array.length array1), (Array.length array2)) with 
+  | (1, 1) -> str_2_array ~str:(string_of_int(array1.(0) * array2.(0)))
+  | (2, 2) -> str_2_array ~str:(string_of_int (multiplyLen2 ~array1:array1 ~array2:array2))
+  | (_, _) -> 
 
-  if Array.length array1 = 1 and Array.length array2 = 1 then
-    str_2_array ~str:string_of_int(array1.(0) * array2.(0))
+    let ( array1, array2 ) = padArray ~array1:array1 ~array2:array2 in
+    let ( x_L, x_H ) = split array1 in
+    let ( y_L, y_H ) = split array2 in
+    let a = karatsuba ~array1:x_H ~array2:y_H in
+    let d = karatsuba ~array1:x_L ~array2:y_L in
 
-  let ( a1, a2 ) = padArray ~array1:array1 ~array2:array2 in
-
-  let ( x_L, x_H ) = split a1 in
-  let ( y_L, y_H ) = split a2 in
-
-  let a = karatsuba ~array1:x_L ~array2:y_L in
-  let an = pow_array ~array1:a ~n:(Array.length a1) in
-
-  let b = karatsuba ~array1:x_H ~array2:y_L in
-  let c = karatsuba ~array1:x_H ~array2:y_L in
-  let result = add_arrays ~array1:b ~array2:c in
-  let resultN = pow_array ~array1:result ~n:((Array.length a1) / 2)
-
-  let d = karatsuba ~array1:x_H ~array2:y_H
-
-  add_arrays ~array1:(add_arrays ~array1:an ~array2:resultN) ~array2:d *)
+    let e = subtract
+            ~array1:(subtract 
+              ~array1:(karatsuba 
+                ~array1:(add_arrays ~array1:x_L ~array2:x_H) 
+                ~array2:(add_arrays ~array1:y_L ~array2:y_H))
+              ~array2:a) 
+            ~array2:d in
+    let result = add_arrays
+        ~array1:(add_arrays
+            ~array1:(pow_array ~array1:a ~n:(Array.length array1))
+            ~array2:(pow_array ~array1:e ~n:((Array.length array1) / 2 )))
+        ~array2:d in 
+  result
 
 
 let () =
-  (* let a = [|1; |] in
-  let b = [|5; 4; 3; 2; |] in
-  let ( newA, newB ) = padArray ~array1:b ~array2:a in
-  Array.iter printline_int newA; 
-  print_endline "-----";
-  Array.iter printline_int newB; *)
-  let array1 = [|9; 9; 9; 1;|] in
-  let array2 = [|0; 0; 0; 5;|] in
-  subtract_arrays ~array1:array1 ~array2:array2 |> Array.iter printline_int;;
-
+  karatsuba ~array1:[|1; 0; 0;|] ~array2:[|1; 0; 0;|] |> Array.iter printline_int;;
+  
 
 
 
