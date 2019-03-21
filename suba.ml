@@ -79,6 +79,12 @@ let add_arrays ~array1 ~array2 =
 
 ;;
 
+(* 
+See Break Early
+https://stackoverflow.com/questions/55272298/ocaml-entire-statement-not-being-evaluated/55277972#55277972
+Can't be bothered to fix as function works fine
+ *)
+
 let subtract_arrays ~array1 ~array2 = 
   let array1 = Array.copy array1 in 
   let array2 = Array.copy array2 in
@@ -233,13 +239,14 @@ let () =
   let num_one = read_line() in 
   print_endline "Enter the second number!";
   let num_two = read_line() in 
+  let t = Sys.time() in
   karatsuba ~array1:(str_2_array ~str:num_one) ~array2:(str_2_array ~str:num_two)
   |> removePaddingArr
   |> Array.fold_left (fun acc s -> acc ^ (string_of_int s)) ""
-  |> print_endline
+  |> print_endline;
+  Printf.printf "Execution time: %fs\n" (Sys.time() -. t);
 
 ;;
- 
 
   (* test_functions (+) add_arrays;; *)
   (* test_functions (-) subtract;; *)
