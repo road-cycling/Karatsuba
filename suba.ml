@@ -240,23 +240,7 @@ let () =
 
 ;;
  
- 
- 
+
   (* test_functions (+) add_arrays;; *)
   (* test_functions (-) subtract;; *)
-  (* let res = removePaddingArr [|0; 0; 0; 1; 2; 3; 4;|] in 
-  printArrayNicely res;; *)
-  (* printArrayNicely bar;; *)
-  (* let arr = [|1; 2; 3; 4;|] *)
-  (* test_suba *)
-  (* test_functions (-) subtract;;
-  test_functions (+) add_arrays;; *)
-  (* printArrayNicely (karatsuba ~array1:[|4; 5; 6;|] ~array2:[|7; 8; 9|]);; *)
-  (* ;; *)
 
-(* Real Result: 375409052	 Your Answer: 385409052Input... Rand_One: 380133480 Rand_two: 4724428 *)
-
-(* [ 0,  3,  8,  0,  11,  2,  13,  4,  7,  10, ]
-[ 0,  0,  0,  4,  7,  2,  4,  4,  2,  8, ]
-
-[ 0,  3,  8,  5,  4,  0,  9,  0,  5,  2, ] *)
