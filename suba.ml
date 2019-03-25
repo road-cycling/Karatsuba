@@ -1,6 +1,3 @@
-(* open Base;; *)
-
-
 let convert ~char =
   match char with
   | '0' -> 0
@@ -156,7 +153,12 @@ let multiplyLen2 ~array1 ~array2 =
   first * second
    ;;
 
-
+let removePaddingArr arr = 
+  let idx = Core.Array.findi ~f:(fun _ item -> item <> 0) arr in
+  match idx with 
+  | Some (idx, _) -> Core.Array.slice arr idx (Array.length arr)
+  | None -> [|0|]
+;;
 
 let rec karatsuba ~array1 ~array2 =
 
@@ -187,54 +189,29 @@ let rec karatsuba ~array1 ~array2 =
     ~array2:d    
 ;;
 
-let removePaddingArr arr = 
-  let idx = Core.Array.findi ~f:(fun _ item -> item <> 0) arr in
-  match idx with 
-  | Some (idx, _) -> Core.Array.slice arr idx (Array.length arr)
-  | None -> [|0|]
+
+let rec expo a n = 
+  match ( n mod 2 = 0, n ) with 
+  | ( _, 1 ) -> str_2_array ~str:(string_of_int a)
+  | ( true, _ )  -> karatsuba ~array1:(expo a (n/2)) ~array2:(expo a (n/2))
+  | ( false, _ ) -> karatsuba ~array1:(karatsuba ~array1:(expo a ((n - 1)/2)) ~array2:(expo a ((n - 1)/2))) ~array2:(str_2_array ~str:(string_of_int a))
 ;;
 
-(* tests *)
-
-let test_functions op func =
-  for _ = 0 to 1000000 do 
-    let rand_one = Random.int 1000000000 in 
-    let rand_two = Random.int 10000000   in 
-    match (rand_one > rand_two) with 
-    | false -> ();
-    | true ->
-      let result = func ~array1:(str_2_array ~str:(string_of_int rand_one)) ~array2:(str_2_array ~str:(string_of_int rand_two)) in
-      let realResult = string_of_int (op rand_one rand_two) in 
-      let myResult = Array.fold_left (fun acc s -> acc ^ (string_of_int s)) "" (removePaddingArr result) in 
-      match (realResult = myResult) with
-      | true -> ();
-      | false -> print_endline ("Real Result: " ^ realResult ^ "\t Your Answer: " ^ myResult ^ "Input... Rand_One: " ^ (string_of_int rand_one) ^ " Rand_two: " ^ (string_of_int rand_two));
-
-  done;
+let expo() = 
+  print_endline "Enter a: ";
+  let a = read_line() in 
+  print_endline "Enter n: ";
+  let n = read_line() in
+  let t = Sys.time() in
+  expo (int_of_string a) (int_of_string n)
+  |> removePaddingArr
+  |> Array.fold_left (fun acc s -> acc ^ (string_of_int s)) ""
+  |> print_endline;
+  Printf.printf "Execution time: %fs\n" (Sys.time() -. t);
 ;;
 
-  
-let test_suba  =
-  for _ = 0 to 100000 do 
-    let rand_one = Random.int 10000000 in 
-    let rand_two = Random.int 100000   in 
-    match (rand_one > rand_two) with 
-    | false -> ();
-    | true ->
-      let result = karatsuba ~array1:(str_2_array ~str:(string_of_int rand_one)) ~array2:(str_2_array ~str:(string_of_int rand_two)) in
-      let realResult = string_of_int (rand_one * rand_two) in 
-      let myResult = Array.fold_left (fun acc s -> acc ^ (string_of_int s)) "" (removePaddingArr result) in 
-      match (realResult = myResult) with
-      | true -> ();
-      | false -> print_endline ("Real Result: " ^ realResult ^ "\t Your Answer: " ^ myResult);
 
-  done;
-  ;;
-
-
-
-
-let () =
+let suba() = 
   print_endline "Enter the first number!";
   let num_one = read_line() in 
   print_endline "Enter the second number!";
@@ -245,9 +222,26 @@ let () =
   |> Array.fold_left (fun acc s -> acc ^ (string_of_int s)) ""
   |> print_endline;
   Printf.printf "Execution time: %fs\n" (Sys.time() -. t);
+;; 
 
+
+let main =
+  let output = "Task 1 -> 1, Task 2 -> 2, Quit -> anything else" in 
+  print_endline output;
+  let input = ref "" in
+  input := read_line(); 
+  while !input = "1" || !input = "2" do 
+    (match !input with 
+      | "1" -> suba();
+      | "2" -> expo();
+      | _ -> ());
+    print_endline output;
+    input := read_line();
+  done;
 ;;
+
 
   (* test_functions (+) add_arrays;; *)
   (* test_functions (-) subtract;; *)
+
 
