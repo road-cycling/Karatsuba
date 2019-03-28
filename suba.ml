@@ -189,13 +189,30 @@ let rec karatsuba ~array1 ~array2 =
     ~array2:d    
 ;;
 
+let memoize f =
+    let table = Core.Hashtbl.Poly.create () in
+    (fun x ->
+      match Core.Hashtbl.find table x with
+      | Some y -> y
+      | None ->
+        let y = f x in
+        Core.Hashtbl.add_exn table ~key:x ~data:y;
+        y
+    );;
 
-let rec expo a n = 
+ let memo_rec f_norec x =
+    let fref = ref (fun _ -> assert false) in
+    let f = memoize (fun x -> f_norec !fref x) in
+    fref := f;
+    f x
+  ;;
+
+let expo = memo_rec (fun expo (a, n) ->  
   match ( n mod 2 = 0, n ) with 
-  | ( _, 1 ) -> str_2_array ~str:(string_of_int a)
-  | ( true, _ )  -> karatsuba ~array1:(expo a (n/2)) ~array2:(expo a (n/2))
-  | ( false, _ ) -> karatsuba ~array1:(karatsuba ~array1:(expo a ((n - 1)/2)) ~array2:(expo a ((n - 1)/2))) ~array2:(str_2_array ~str:(string_of_int a))
-;;
+    | ( _, 1 ) -> str_2_array ~str:(string_of_int a)
+    | ( true, _ )  -> karatsuba ~array1:(expo (a, (n/2))) ~array2:(expo (a, (n/2)))
+    | ( false, _ ) -> karatsuba ~array1:(karatsuba ~array1:(expo (a, ((n - 1)/2))) ~array2:(expo (a, ((n - 1)/2)))) ~array2:(str_2_array ~str:(string_of_int a))
+);;
 
 let expo() = 
   print_endline "Enter a: ";
@@ -203,7 +220,7 @@ let expo() =
   print_endline "Enter n: ";
   let n = read_line() in
   let t = Sys.time() in
-  expo (int_of_string a) (int_of_string n)
+  expo ((int_of_string a), (int_of_string n))
   |> removePaddingArr
   |> Array.fold_left (fun acc s -> acc ^ (string_of_int s)) ""
   |> print_endline;
@@ -238,10 +255,12 @@ let main =
     print_endline output;
     input := read_line();
   done;
-;;
+;;  
 
 
   (* test_functions (+) add_arrays;; *)
   (* test_functions (-) subtract;; *)
+
+
 
 
