@@ -170,8 +170,8 @@ let rec karatsuba ~array1 ~array2 =
     let ( array1, array2 ) = padArray ~array1:array1 ~array2:array2 in
     let ( x_H, x_L ) = split array1 in
     let ( y_H, y_L ) = split array2 in
+    
     let a = karatsuba ~array1:x_H ~array2:y_H in
-
     let d = karatsuba ~array1:x_L ~array2:y_L in
 
     let e = subtract
